@@ -1,11 +1,15 @@
 package com.assessment.corebanking.controller;
 
 import com.assessment.corebanking.dto.CardMapper;
+import com.assessment.corebanking.dto.CardNotificationResponse;
 import com.assessment.corebanking.dto.CardRequest;
 import com.assessment.corebanking.dto.CardResponse;
+import com.assessment.corebanking.dto.ExternalPost;
 import com.assessment.corebanking.entity.Card;
 import com.assessment.corebanking.service.CardService;
+import com.assessment.corebanking.service.ExternalApiService;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -24,9 +28,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class CardController {
 
     private final CardService cardService;
+    private final ExternalApiService externalApiService;
 
-    public CardController(CardService cardService) {
+    public CardController(CardService cardService, ExternalApiService externalApiService) {
         this.cardService = cardService;
+        this.externalApiService = externalApiService;
     }
 
     @GetMapping
@@ -39,6 +45,16 @@ public class CardController {
     public CardResponse getCard(@PathVariable Long id) {
         Card card = cardService.getCardById(id);
         return CardMapper.toResponse(card);
+    }
+
+    @GetMapping("/{id}/notifications")
+    public CardNotificationResponse getNotifications(@PathVariable Long id) {
+        cardService.getCardById(id);
+        List<ExternalPost> notifications = externalApiService.getNotificationsForCard(id);
+        CardNotificationResponse response = new CardNotificationResponse();
+        response.setCardId(id);
+        response.setNotifications(notifications);
+        return response;
     }
 
     @PostMapping

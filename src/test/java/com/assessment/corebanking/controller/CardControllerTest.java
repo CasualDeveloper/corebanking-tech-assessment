@@ -12,16 +12,22 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureMockRestServiceServer;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.client.ExpectedCount;
+import org.springframework.test.web.client.MockRestServiceServer;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -31,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@AutoConfigureMockRestServiceServer
 @ActiveProfiles("test")
 class CardControllerTest {
 
@@ -42,6 +49,9 @@ class CardControllerTest {
 
     @Autowired
     private CardRepository cardRepository;
+
+    @Autowired
+    private MockRestServiceServer mockServer;
 
     @AfterEach
     void cleanup() {
@@ -137,6 +147,45 @@ class CardControllerTest {
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.error").value("Card not found"))
             .andExpect(jsonPath("$.id").value(999));
+    }
+
+    @Test
+    void getNotificationsReturnsPayload() throws Exception {
+        Card saved = saveCard("4485275742308327", CardType.DEBIT);
+        long cardId = saved.getId();
+        long mod = Math.floorMod(cardId, 10);
+        int userId = Math.toIntExact(mod + 1);
+        String body = "[{\"userId\":" + userId
+            + ",\"id\":21,\"title\":\"Test title\",\"body\":\"Test body\"}]";
+
+        mockServer.expect(requestTo("https://jsonplaceholder.typicode.com/posts?userId=" + userId))
+            .andExpect(method(org.springframework.http.HttpMethod.GET))
+            .andRespond(withSuccess(body, MediaType.APPLICATION_JSON));
+
+        mockMvc.perform(get("/api/cards/{id}/notifications", cardId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.cardId").value(cardId))
+            .andExpect(jsonPath("$.notifications", hasSize(1)))
+            .andExpect(jsonPath("$.notifications[0].id").value(21))
+            .andExpect(jsonPath("$.notifications[0].title").value("Test title"));
+
+        mockServer.verify();
+    }
+
+    @Test
+    void getNotificationsCardNotFoundReturns404() throws Exception {
+        int userId = Math.toIntExact(Math.floorMod(999L, 10) + 1);
+        mockServer.expect(ExpectedCount.never(),
+                requestTo("https://jsonplaceholder.typicode.com/posts?userId=" + userId))
+            .andExpect(method(org.springframework.http.HttpMethod.GET))
+            .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+
+        mockMvc.perform(get("/api/cards/{id}/notifications", 999L))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.error").value("Card not found"))
+            .andExpect(jsonPath("$.id").value(999));
+
+        mockServer.verify();
     }
 
     private CardRequest buildRequest(String cardNumber, CardType cardType, BigDecimal creditLimit) {
