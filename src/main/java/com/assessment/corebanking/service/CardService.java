@@ -3,6 +3,7 @@ package com.assessment.corebanking.service;
 import com.assessment.corebanking.dto.CardMapper;
 import com.assessment.corebanking.dto.CardRequest;
 import com.assessment.corebanking.entity.Card;
+import com.assessment.corebanking.exception.CardNotFoundException;
 import com.assessment.corebanking.repository.CardRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,7 +35,7 @@ public class CardService {
     public Card updateCard(Long id, CardRequest request) {
         cardDomainValidator.validate(request);
         Card card = cardRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Card not found: " + id));
+            .orElseThrow(() -> new CardNotFoundException(id));
         CardMapper.updateEntity(request, card);
         return cardRepository.save(card);
     }
@@ -42,7 +43,7 @@ public class CardService {
     @Transactional
     public Card getCardById(Long id) {
         return cardRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Card not found: " + id));
+            .orElseThrow(() -> new CardNotFoundException(id));
     }
 
     @Transactional
@@ -53,6 +54,9 @@ public class CardService {
 
     @Transactional
     public void deleteCard(Long id) {
+        if (!cardRepository.existsById(id)) {
+            throw new CardNotFoundException(id);
+        }
         cardRepository.deleteById(id);
     }
 }
