@@ -1,0 +1,150 @@
+{
+  "info": {
+    "name": "CoreBanking",
+    "description": "Core Banking Tech Assessment API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "cardId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "List Cards",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/cards?page=0&sort=createdAt,desc",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "cards"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "sort",
+              "value": "createdAt,desc"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Card",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/cards/{{cardId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "cards",
+            "{{cardId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Card",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cardNumber\": \"4111111111111111\",\n  \"cardholderName\": \"Jamie Doe\",\n  \"expiryDate\": \"2030-12-31\",\n  \"status\": \"ACTIVE\",\n  \"cardType\": \"CREDIT\",\n  \"creditLimit\": 5000.00,\n  \"balance\": 125.50\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/cards",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "cards"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Update Card",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cardNumber\": \"4111111111111111\",\n  \"cardholderName\": \"Jamie Doe\",\n  \"expiryDate\": \"2031-12-31\",\n  \"status\": \"ACTIVE\",\n  \"cardType\": \"CREDIT\",\n  \"creditLimit\": 7000.00,\n  \"balance\": 200.00\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/cards/{{cardId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "cards",
+            "{{cardId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Delete Card",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{baseUrl}}/api/cards/{{cardId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "cards",
+            "{{cardId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Notifications",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/cards/{{cardId}}/notifications",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "cards",
+            "{{cardId}}",
+            "notifications"
+          ]
+        }
+      }
+    }
+  ]
+}
