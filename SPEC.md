@@ -312,7 +312,7 @@ spring:
 # application-test.yml
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb;MODE=MSSQL
+    url: jdbc:h2:mem:testdb;MODE=MSSQLServer
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -330,7 +330,7 @@ spring:
 - Use `@SpringBootTest` with H2 (test profile for speed)
 - Test all CRUD endpoints via `MockMvc`
 - Verify pagination behavior
-- Mock external API calls with `@MockBean`
+- Mock external API calls with `MockRestServiceServer` (RestTemplate)
 
 ### Test Coverage Targets
 
