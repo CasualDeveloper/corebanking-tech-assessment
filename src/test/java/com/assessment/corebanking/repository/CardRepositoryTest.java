@@ -37,5 +37,11 @@ class CardRepositoryTest {
         assertThat(saved.getId()).isNotNull();
         assertThat(saved.getCreatedAt()).isNotNull();
         assertThat(saved.getUpdatedAt()).isNotNull();
+
+        assertThat(cardRepository.findById(saved.getId()))
+            .isPresent()
+            .get()
+            .extracting(Card::getCardNumber)
+            .isEqualTo("4293127308501088");
     }
 }

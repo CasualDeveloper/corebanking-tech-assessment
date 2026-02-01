@@ -20,7 +20,7 @@ docker compose up --build
 Smoke check:
 
 ```bash
-curl http://localhost:8080/api/cards
+docker compose up -d && sleep 20 && curl http://localhost:8080/api/cards
 ```
 
 ## Tests
@@ -54,6 +54,12 @@ The collection uses variables:
 - `baseUrl` (default `http://localhost:8080`)
 - `cardId` (set after creating a card)
 
+## Submission
+
+Public repository URL:
+
+- https://github.com/CasualDeveloper/corebanking-tech-assessment
+
 ## Logs
 
 - File: `logs/application.log`
@@ -64,10 +70,7 @@ The collection uses variables:
 
 An optional compose file is provided at `docker-compose.postgres.yml`.
 
-Requirements:
-
-1. Add the PostgreSQL driver dependency to `pom.xml` (`org.postgresql:postgresql`).
-2. Ensure `SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver` is set (already in the compose file).
+The PostgreSQL driver is already included as a runtime dependency. The compose file sets the driver class.
 
 Then run:
 
