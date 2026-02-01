@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -184,6 +185,23 @@ class CardControllerTest {
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.error").value("Card not found"))
             .andExpect(jsonPath("$.id").value(999));
+
+        mockServer.verify();
+    }
+
+    @Test
+    void getNotificationsExternalFailureReturns502() throws Exception {
+        Card saved = saveCard("4000000000000015", CardType.DEBIT);
+        long cardId = saved.getId();
+        int userId = Math.toIntExact(Math.floorMod(cardId, 10) + 1);
+
+        mockServer.expect(requestTo("https://jsonplaceholder.typicode.com/posts?userId=" + userId))
+            .andExpect(method(org.springframework.http.HttpMethod.GET))
+            .andRespond(withServerError());
+
+        mockMvc.perform(get("/api/cards/{id}/notifications", cardId))
+            .andExpect(status().isBadGateway())
+            .andExpect(jsonPath("$.error").value("External service unavailable"));
 
         mockServer.verify();
     }
